@@ -10,7 +10,6 @@ using Amazon.Kinesis.Model;
 using Amazon.Runtime;
 using EventPublisher.Helpers;
 using EventPublisher.Model;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using DescribeStreamRequest = Amazon.Kinesis.Model.DescribeStreamRequest;
 using PutRecordsRequest = Amazon.Kinesis.Model.PutRecordsRequest;
@@ -28,16 +27,10 @@ namespace EventPublisher.Models
         {
             _config = options;
         }
-        // private string _partitionKey;
-
 
         public async Task<bool> Initiate()
         {
-            // if (_config is not AwsKinesisEventBusOptions kConfig)
-            // {
-            //     throw new ArgumentNullException(nameof(_config));
-            // }
-            
+            // TODO: validation before using the info.
             Initiate(_config.Value.AccessKeyId, _config.Value.SecretAccessKey, _config.Value.ServerUrl);
             _streamName = _config.Value.StreamName;
 
@@ -62,7 +55,6 @@ namespace EventPublisher.Models
             throw new NotImplementedException();
         }
 
-        
         private void Initiate(string accessKeyId, string secretAccessKey, string serverUrl)
         {
             _client = new AmazonKinesisClient(
@@ -127,6 +119,7 @@ namespace EventPublisher.Models
         }
 
         /// <summary>
+        /// TODO: WIP
         /// Error handling should be handled on consumer leve.
         /// TODO: PartitionKey need to find a way.
         /// </summary>

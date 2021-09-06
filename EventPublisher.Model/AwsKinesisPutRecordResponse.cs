@@ -1,6 +1,7 @@
+
 namespace EventPublisher.Model
 {
-    public class AwsKinesisPutRecordResponse
+    public abstract class AwsKinesisPutRecordResponse: EventBusResponseBase
     {
         
     }

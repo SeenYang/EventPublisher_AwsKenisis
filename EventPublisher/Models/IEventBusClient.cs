@@ -1,11 +1,13 @@
+using System.Threading.Tasks;
 using EventPublisher.Model;
+using Microsoft.Extensions.Configuration;
 
 namespace EventPublisher.Models
 {
-    public interface IEventPublisher
+    public interface IEventBusClient
     {
-        void Initiate();
-        T PublishEvent<T>(IEventBase request);
+        Task<bool> Initiate();
+        Task<bool> PublishEvent<T>(T data);
         void ClosePublisher();
     }
 }

@@ -1,7 +1,8 @@
 namespace EventPublisher.Model
 {
-    public class AwsKinesisputRecordRequestDto
+    public class AwsKinesisPutRecordRequestDto<T> : EventBase
     {
-        
+        public string PartitionalKey { get; set; }
+        public T Data { get; set; }
     }
 }

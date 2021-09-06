@@ -1,6 +1,8 @@
+using Amazon.Kinesis.Model;
+
 namespace EventPublisher.Model
 {
-    public class IEventBusResponseBase
+    public class EventBusResponseBase: PutRecordResponse
     {
         
     }

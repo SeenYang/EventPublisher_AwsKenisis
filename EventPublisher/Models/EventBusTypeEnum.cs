@@ -1,7 +1,9 @@
 namespace EventPublisher.Models
 {
-    public class EventBusTypeEnum
+    public enum EventBusTypeEnum
     {
+        Default = 0,
+        Kinesis = 1
         
     }
 }

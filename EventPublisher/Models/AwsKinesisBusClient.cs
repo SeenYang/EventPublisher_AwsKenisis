@@ -4,39 +4,66 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Amazon.Kinesis;
 using Amazon.Kinesis.Model;
 using Amazon.Runtime;
+using EventPublisher.Helpers;
 using EventPublisher.Model;
-using EventPublisher.Models;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using DescribeStreamRequest = Amazon.Kinesis.Model.DescribeStreamRequest;
 using PutRecordsRequest = Amazon.Kinesis.Model.PutRecordsRequest;
 
-namespace EventPublisher
+namespace EventPublisher.Models
 {
     public class AwsKinesisBusClient : IEventBusClient
     {
         private AmazonKinesisClient _client;
-        
-        public void Initiate()
+        private string _streamName;
+
+        private readonly IOptions<AwsKinesisEventBusOptions> _config;
+
+        public AwsKinesisBusClient(IOptions<AwsKinesisEventBusOptions> options)
         {
-            throw new NotImplementedException();
+            _config = options;
+        }
+        // private string _partitionKey;
+
+
+        public async Task<bool> Initiate()
+        {
+            // if (_config is not AwsKinesisEventBusOptions kConfig)
+            // {
+            //     throw new ArgumentNullException(nameof(_config));
+            // }
+            
+            Initiate(_config.Value.AccessKeyId, _config.Value.SecretAccessKey, _config.Value.ServerUrl);
+            _streamName = _config.Value.StreamName;
+
+            return await GetStreamStatus(_streamName) == StreamStatus.ACTIVE;
         }
 
-        public T PublishEvent<T>(IEventBase request)
+        public async Task<bool> PublishEvent<T>(T data)
         {
-            throw new NotImplementedException();
+            // TODO: put the event context inject here.
+            // Thus consumer should only pass what the `T data` they want to sent into this method.
+
+            var response = await PutRecordAsync<T>(new AwsKinesisPutRecordRequestDto<T>
+            {
+                Data = data,
+                PartitionalKey = new Random().Next(5).ToString()    // random between 0 - 5.
+            });
+            return response;
         }
 
         public void ClosePublisher()
         {
             throw new NotImplementedException();
         }
-        
 
-        public void Initiate(string accessKeyId, string secretAccessKey, string serverUrl)
+        
+        private void Initiate(string accessKeyId, string secretAccessKey, string serverUrl)
         {
             _client = new AmazonKinesisClient(
                 accessKeyId,
@@ -47,7 +74,7 @@ namespace EventPublisher
                 });
         }
 
-        public void CreateStream(string streamName, int streamSize)
+        public async Task CreateStream(string streamName, int streamSize)
         {
             // todo: verify whether client is initiated.
             try
@@ -57,43 +84,46 @@ namespace EventPublisher
                     StreamName = streamName,
                     ShardCount = streamSize
                 };
-                var createStreamResponse = _client.CreateStreamAsync(createStreamRequest).Result;
-                Console.Error.WriteLine($@"Created Stream :  {streamName} \  Response: {createStreamResponse}");
+                var createStreamResponse = await _client.CreateStreamAsync(createStreamRequest);
+                await Console.Error.WriteLineAsync($@"Created Stream :  {streamName} \  Response: {createStreamResponse}");
             }
             catch (ResourceInUseException)
             {
-                Console.Error.WriteLine("Producer is quitting without creating stream " + streamName +
+                await Console.Error.WriteLineAsync("Producer is quitting without creating stream " + streamName +
                                         " to put records into as a stream of the same name already exists.");
                 Environment.Exit(1);
             }
         }
 
-        public StreamStatus GetStreamStatus(string streamName)
+        public async Task<StreamStatus> GetStreamStatus(string streamName)
         {
             var describeStreamReq = new DescribeStreamRequest
             {
                 StreamName = streamName
             };
-            var describeResult = _client.DescribeStreamAsync(describeStreamReq).Result;
+            var describeResult = await _client.DescribeStreamAsync(describeStreamReq);
             string streamStatus = describeResult.StreamDescription.StreamStatus;
-            Console.Error.WriteLine("  - current state: " + streamStatus);
+            await Console.Error.WriteLineAsync("  - current state: " + streamStatus);
 
             return streamStatus;
         }
 
-        public async Task<PutRecordResponse> PutRecordAsync<T>(string streamName, string partitionKey, T data)
+        private async Task<bool> PutRecordAsync<T>(AwsKinesisPutRecordRequestDto<T> request)
         {
             var requestRecord = new PutRecordRequest
             {
-                StreamName = streamName,
-                Data = SerialiseData(data),
-                PartitionKey = partitionKey
+                StreamName = _streamName,
+                Data = SerialiseData(request.Data, Encoding.UTF8),
+                PartitionKey = request.PartitionalKey
             };
 
             var result = await _client.PutRecordAsync(requestRecord);
+            await Console.Error.WriteLineAsync(
+                $"Successfully put record {request.Data.ToString()}:\n\t shard ID = {result.ShardId}");
+            
             // todo: error handling.
 
-            return result;
+            return true ;
         }
 
         /// <summary>
@@ -125,7 +155,7 @@ namespace EventPublisher
             {
                 var entry = new PutRecordsRequestEntry
                 {
-                    Data = SerialiseData(d),
+                    Data = SerialiseData(d, Encoding.UTF8),
                     PartitionKey = partitionKey // todo: confirm this.
                 };
                 recordsRequest.Records.Add(entry);
@@ -160,49 +190,14 @@ namespace EventPublisher
 
         // TODO：make encoding as an option either read from config or enum variable.
         // TODO: Memory usage and batch setup need to confirm.
-        private static MemoryStream SerialiseData<T>(T data)
+        private static MemoryStream SerialiseData<T>(T data, Encoding encoding)
         {
             var dataAsJson = JsonSerializer.Serialize(data, new JsonSerializerOptions
             {
                 Converters = { new EventConverter() }
             });
-            var dataAsBytes = Encoding.UTF8.GetBytes(dataAsJson);
+            var dataAsBytes = encoding.GetBytes(dataAsJson);
             return new MemoryStream(dataAsBytes);
         }
     }
-
-    public class EventConverter : JsonConverter<IEventBase>
-    {
-        // TODO: Implement this once package is used in message consuming.
-        public override IEventBase Read(
-            ref Utf8JsonReader reader,
-            Type typeToConvert,
-            JsonSerializerOptions options)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override void Write(
-            Utf8JsonWriter writer,
-            IEventBase value,
-            JsonSerializerOptions options)
-        {
-            switch (value)
-            {
-                case null:
-                    throw new ArgumentNullException(nameof(value));
-                default:
-                {
-                    Type type = value.GetType();
-                    JsonSerializer.Serialize(writer, value, type, options);
-                    break;
-                }
-            }
-        }
-    }
-
-    // public interface IEvent
-    // {
-    //     string EventSchemaVersion { get; init; }
-    // }
 }

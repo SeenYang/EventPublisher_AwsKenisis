@@ -1,6 +1,6 @@
 namespace EventPublisher.Model
 {
-    public  interface IEventBase
+    public  abstract class EventBase
     {
         string EventSchemaVersion { get; set; }
     }

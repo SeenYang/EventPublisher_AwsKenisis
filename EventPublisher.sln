@@ -2,6 +2,10 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventPublisher", "EventPublisher\EventPublisher.csproj", "{B124BDD9-CEBE-4032-A5B4-636FCE0D1B33}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventPublisher.LocalTests", "EventPublisher.LocalTests\EventPublisher.LocalTests.csproj", "{A5417F23-CD42-470F-B01C-400DCD1C590E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventPublisher.Model", "EventPublisher.Model\EventPublisher.Model.csproj", "{F90E3992-C516-43C8-A1E5-420A71AA1ACE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -12,5 +16,13 @@ Global
 		{B124BDD9-CEBE-4032-A5B4-636FCE0D1B33}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B124BDD9-CEBE-4032-A5B4-636FCE0D1B33}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B124BDD9-CEBE-4032-A5B4-636FCE0D1B33}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A5417F23-CD42-470F-B01C-400DCD1C590E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A5417F23-CD42-470F-B01C-400DCD1C590E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A5417F23-CD42-470F-B01C-400DCD1C590E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A5417F23-CD42-470F-B01C-400DCD1C590E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F90E3992-C516-43C8-A1E5-420A71AA1ACE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F90E3992-C516-43C8-A1E5-420A71AA1ACE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F90E3992-C516-43C8-A1E5-420A71AA1ACE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F90E3992-C516-43C8-A1E5-420A71AA1ACE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

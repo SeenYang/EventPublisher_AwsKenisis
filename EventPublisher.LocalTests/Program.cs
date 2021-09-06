@@ -10,7 +10,7 @@ namespace EventPublisher.LocalTests
     internal static class Program
     {
         // public static AwsKinesisBusClient BusClient;
-        private static IConfigurationRoot _config;
+        private static IConfiguration _config;
 
         private static IHostBuilder CreateHostBuilder(string[] args)
         {
@@ -21,8 +21,6 @@ namespace EventPublisher.LocalTests
                         .AddJsonFile("appsettings.json", true, true);
                     _config = builder.Build();
                     services.UseEventBus(_config);
-                    // TODO find a way to use base type.
-                    services.Configure<AwsKinesisEventBusOptions>(_config.GetSection("EventBus"));
                 });
         }
 

@@ -1,7 +1,7 @@
-using Microsoft.Extensions.DependencyInjection;
 using System;
 using EventPublisher.Models;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace EventPublisher
 {
@@ -19,21 +19,20 @@ namespace EventPublisher
             {
                 throw new ArgumentNullException(nameof(config), "EventBus Type is not provided.");
             }
-
             Enum.TryParse<EventBusTypeEnum>(type, out var parsedType);
-            return RegisterClient(services, parsedType);
-        }
-
-        private static IServiceCollection RegisterClient(this IServiceCollection services, EventBusTypeEnum type)
-        {
-            switch (type)
+            
+            switch (parsedType)
             {
                 case EventBusTypeEnum.Kinesis:
+                    services.Configure<AwsKinesisEventBusOptions>(config.GetSection("EventBus"));
                     services.AddSingleton<IEventBusClient, AwsKinesisBusClient>();
                     break;
+                case EventBusTypeEnum.Default:
+                    throw new NotImplementedException();
                 default:
                     throw new ArgumentNullException();
             }
+            
             return services;
         }
     }

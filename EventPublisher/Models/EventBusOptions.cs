@@ -4,15 +4,16 @@ namespace EventPublisher.Models
 {
     public interface IEventBusOptionBase
     {
-        public EventBusTypeEnum Type { get; set; }
+        public const EventBusTypeEnum Type = EventBusTypeEnum.Default;
     }
 
-    public class AwsKinesisEventBusOptions : IEventBusOptionBase
+    // public class AwsKinesisEventBusOptions : IEventBusOptionBase
+    public class AwsKinesisEventBusOptions
     {
         public string AccessKeyId { get; set; }
         public string SecretAccessKey { get; set; }
         public string ServerUrl { get; set; }
         public string StreamName { get; set; }
-        public EventBusTypeEnum Type { get; set; } = EventBusTypeEnum.Kinesis;
+        public const EventBusTypeEnum Type  = EventBusTypeEnum.Kinesis;
     }
 }

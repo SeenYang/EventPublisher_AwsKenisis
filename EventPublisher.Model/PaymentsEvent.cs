@@ -4,7 +4,8 @@ namespace EventPublisher.Model
     {
         private string EventSchemaVersion { get; set; } = "1.0";
         private string DataContentType { get; set; } = "application/json";
-        private string Type { get; set; } = "xero.payments.statusupdated.v1.1";
+        // Here is the type that actual sent to event bus. we should hide this from consumer.
+        private string Type { get; set; } = "EventBusType";
         public string PartitionalKey { get; set; }
         public T Data { get; set; }
     }

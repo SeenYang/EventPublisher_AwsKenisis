@@ -1,9 +1,8 @@
-namespace EventPublisher.Models
+namespace EventPublisher.Model
 {
     public enum EventBusTypeEnum
     {
         Default = 0,
-        Kinesis = 1
-        
+        Payments = 1
     }
 }

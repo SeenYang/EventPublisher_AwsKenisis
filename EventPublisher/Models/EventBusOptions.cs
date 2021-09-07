@@ -1,4 +1,4 @@
-using System;
+using EventPublisher.Model;
 
 namespace EventPublisher.Models
 {
@@ -10,10 +10,10 @@ namespace EventPublisher.Models
     // public class AwsKinesisEventBusOptions : IEventBusOptionBase
     public class AwsKinesisEventBusOptions
     {
+        public const EventBusTypeEnum Type = EventBusTypeEnum.Payments;
         public string AccessKeyId { get; set; }
         public string SecretAccessKey { get; set; }
         public string ServerUrl { get; set; }
         public string StreamName { get; set; }
-        public const EventBusTypeEnum Type  = EventBusTypeEnum.Kinesis;
     }
 }

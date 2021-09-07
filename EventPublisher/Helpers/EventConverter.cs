@@ -27,7 +27,7 @@ namespace EventPublisher.Helpers
                     throw new ArgumentNullException(nameof(value));
                 default:
                 {
-                    Type type = value.GetType();
+                    var type = value.GetType();
                     JsonSerializer.Serialize(writer, value, type, options);
                     break;
                 }

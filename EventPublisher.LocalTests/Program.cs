@@ -1,6 +1,7 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
-using EventPublisher.Models;
+using EventPublisher.Clients;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -29,10 +30,13 @@ namespace EventPublisher.LocalTests
             using var host = CreateHostBuilder(args).Build();
             var client = host.Services.GetRequiredService<IEventBusClient>();
 
-            // ** Please manually create stream before calling the initiate(). **
-            await client.Initiate();
-
             // Send data into stream.
+            while (!await client.GetEventBusStatus())
+            {
+                await Console.Error.WriteLineAsync("Event bus is not ready yet. Please wait.");
+                Thread.Sleep(1000);
+            }
+
             for (var j = 0; j < 10; ++j)
             {
                 var message = "testData-" + j;

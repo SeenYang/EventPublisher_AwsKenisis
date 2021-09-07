@@ -10,44 +10,44 @@ using Amazon.Kinesis.Model;
 using Amazon.Runtime;
 using EventPublisher.Helpers;
 using EventPublisher.Model;
+using EventPublisher.Models;
 using Microsoft.Extensions.Options;
-using DescribeStreamRequest = Amazon.Kinesis.Model.DescribeStreamRequest;
-using PutRecordsRequest = Amazon.Kinesis.Model.PutRecordsRequest;
 
-namespace EventPublisher.Models
+namespace EventPublisher.Clients
 {
     public class AwsKinesisBusClient : IEventBusClient
     {
+        private readonly IOptions<AwsKinesisEventBusOptions> _config;
         private AmazonKinesisClient _client;
         private string _streamName;
-
-        private readonly IOptions<AwsKinesisEventBusOptions> _config;
 
         public AwsKinesisBusClient(IOptions<AwsKinesisEventBusOptions> options)
         {
             _config = options;
         }
 
-        public async Task<bool> Initiate()
+        public async Task<bool> PublishEvent<T>(T data)
         {
             // TODO: validation before using the info.
             Initiate(_config.Value.AccessKeyId, _config.Value.SecretAccessKey, _config.Value.ServerUrl);
             _streamName = _config.Value.StreamName;
 
-            return await GetStreamStatus(_streamName) == StreamStatus.ACTIVE;
-        }
+            if (await GetStreamStatus(_streamName) != StreamStatus.ACTIVE)
+                throw new ArgumentException($"Stream: {_streamName} is not active.");
 
-        public async Task<bool> PublishEvent<T>(T data)
-        {
             // TODO: put the event context inject here.
-            // Thus consumer should only pass what the `T data` they want to sent into this method.
 
-            var response = await PutRecordAsync<T>(new AwsKinesisPutRecordRequestDto<T>
+            var response = await PutRecordAsync(new PaymentsEvent<T>
             {
                 Data = data,
-                PartitionalKey = new Random().Next(5).ToString()    // random between 0 - 5.
+                PartitionalKey = new Random().Next(5).ToString() // random between 0 - 5.
             });
             return response;
+        }
+
+        public async Task<bool> GetEventBusStatus()
+        {
+            return await GetStreamStatus(_streamName) == StreamStatus.ACTIVE;
         }
 
         public void ClosePublisher()
@@ -62,7 +62,7 @@ namespace EventPublisher.Models
                 secretAccessKey,
                 new AmazonKinesisConfig
                 {
-                    ServiceURL = serverUrl,
+                    ServiceURL = serverUrl
                 });
         }
 
@@ -77,17 +77,18 @@ namespace EventPublisher.Models
                     ShardCount = streamSize
                 };
                 var createStreamResponse = await _client.CreateStreamAsync(createStreamRequest);
-                await Console.Error.WriteLineAsync($@"Created Stream :  {streamName} \  Response: {createStreamResponse}");
+                await Console.Error.WriteLineAsync(
+                    $@"Created Stream :  {streamName} \  Response: {createStreamResponse}");
             }
             catch (ResourceInUseException)
             {
                 await Console.Error.WriteLineAsync("Producer is quitting without creating stream " + streamName +
-                                        " to put records into as a stream of the same name already exists.");
+                                                   " to put records into as a stream of the same name already exists.");
                 Environment.Exit(1);
             }
         }
 
-        public async Task<StreamStatus> GetStreamStatus(string streamName)
+        private async Task<StreamStatus> GetStreamStatus(string streamName)
         {
             var describeStreamReq = new DescribeStreamRequest
             {
@@ -100,7 +101,7 @@ namespace EventPublisher.Models
             return streamStatus;
         }
 
-        private async Task<bool> PutRecordAsync<T>(AwsKinesisPutRecordRequestDto<T> request)
+        private async Task<bool> PutRecordAsync<T>(PaymentsEvent<T> request)
         {
             var requestRecord = new PutRecordRequest
             {
@@ -112,16 +113,16 @@ namespace EventPublisher.Models
             var result = await _client.PutRecordAsync(requestRecord);
             await Console.Error.WriteLineAsync(
                 $"Successfully put record {request.Data.ToString()}:\n\t shard ID = {result.ShardId}");
-            
+
             // todo: error handling.
 
-            return true ;
+            return true;
         }
 
         /// <summary>
-        /// TODO: WIP
-        /// Error handling should be handled on consumer leve.
-        /// TODO: PartitionKey need to find a way.
+        ///     TODO: WIP
+        ///     Error handling should be handled on consumer leve.
+        ///     TODO: PartitionKey need to find a way.
         /// </summary>
         /// <param name="streamName"></param>
         /// <param name="partitionKey"></param>
@@ -133,10 +134,7 @@ namespace EventPublisher.Models
             IEnumerable<T> data)
         {
             var enumerable = data as T[] ?? data.ToArray();
-            if (data == null || !enumerable.Any())
-            {
-                throw new ArgumentNullException(nameof(data));
-            }
+            if (data == null || !enumerable.Any()) throw new ArgumentNullException(nameof(data));
 
             var recordsRequest = new PutRecordsRequest
             {

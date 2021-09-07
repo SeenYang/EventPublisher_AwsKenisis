@@ -1,5 +1,7 @@
+using System;
+using System.Threading;
 using System.Threading.Tasks;
-using EventPublisher.Models;
+using EventPublisher.Clients;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EventPublisher.WebApiDemo.Controllers
@@ -18,7 +20,12 @@ namespace EventPublisher.WebApiDemo.Controllers
         [HttpPost]
         public async Task<IActionResult> PublishMessage(string message)
         {
-            await _client.Initiate();
+            while (!await _client.GetEventBusStatus())
+            {
+                await Console.Error.WriteLineAsync("Event bus is not ready yet. Please wait.");
+                Thread.Sleep(1000);
+            }
+
             await _client.PublishEvent(message);
             return Ok();
         }

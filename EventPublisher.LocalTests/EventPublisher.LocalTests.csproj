@@ -6,16 +6,16 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Amazon.Kinesis" Version="0.21.0"/>
-        <PackageReference Include="AWSSDK.Kinesis" Version="3.7.0.57"/>
-        <PackageReference Include="Microsoft.Extensions.Configuration" Version="5.0.0"/>
-        <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="5.0.0"/>
-        <PackageReference Include="Microsoft.Extensions.Hosting" Version="5.0.0"/>
-        <PackageReference Include="System.Text.Json" Version="5.0.2"/>
+        <PackageReference Include="AWSSDK.Core" Version="3.7.3.2" />
+        <PackageReference Include="AWSSDK.Kinesis" Version="3.7.0.62" />
+        <PackageReference Include="Microsoft.Extensions.Configuration" Version="5.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="5.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Hosting" Version="5.0.0" />
+        <PackageReference Include="System.Text.Json" Version="5.0.2" />
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\EventPublisher\EventPublisher.csproj"/>
+        <ProjectReference Include="..\EventPublisher\EventPublisher.csproj" />
     </ItemGroup>
 
     <ItemGroup>

@@ -17,11 +17,11 @@ namespace EventPublisher.Clients
 {
     public class AwsKinesisBusClient : IEventBusClient
     {
-        private readonly IOptions<AwsKinesisEventBusOptions> _config;
+        private readonly IOptions<PaymentsEventBusOptions> _config;
         private AmazonKinesisClient _client;
         private string _streamName;
 
-        public AwsKinesisBusClient(IOptions<AwsKinesisEventBusOptions> options)
+        public AwsKinesisBusClient(IOptions<PaymentsEventBusOptions> options)
         {
             _config = options;
         }

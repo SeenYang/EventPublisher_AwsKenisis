@@ -25,7 +25,7 @@ namespace EventPublisher
             switch (parsedType)
             {
                 case EventBusTypeEnum.Payments:
-                    services.Configure<AwsKinesisEventBusOptions>(config.GetSection("EventBus"));
+                    services.Configure<PaymentsEventBusOptions>(config);
                     services.AddSingleton<IEventBusClient, AwsKinesisBusClient>();
                     break;
                 case EventBusTypeEnum.Default:
@@ -45,27 +45,16 @@ namespace EventPublisher
         /// <param name="optionsAction"></param>
         /// <param name="contextLifeTime"></param>
         /// <param name="optionsLifetime"></param>
-        /// <typeparam name="TEventBusProvider"></typeparam>
+        /// <typeparam name="TEventBusOptions"></typeparam>
         /// <returns></returns>
-        [Obsolete]
-        public static IServiceCollection UseEventBus<TEventBusProvider>(this IServiceCollection services,
-            Action<EventBusClientBuilder> optionsAction = null,
+        public static IServiceCollection UseEventBus<TEventBusOptions>(
+            this IServiceCollection services,
+            Action<PaymentsEventBusOptions> optionsAction = null,
             ServiceLifetime contextLifeTime = ServiceLifetime.Scoped,
             ServiceLifetime optionsLifetime = ServiceLifetime.Scoped
-        ) where TEventBusProvider : EventBusProvider
+        ) where TEventBusOptions : IEventBusOptionBase
         {
             return services;
-        }
-    }
-
-    public static class KinesisEventBusBuilderExtensions
-    {
-        public static EventBusClientBuilder UsePaymentsEventBus(
-            this EventBusClientBuilder optionsBuilder,
-            Action<KinesisEventBusClientBuilder> sqliteOptionsAction = null
-        )
-        {
-            return optionsBuilder;
         }
     }
 }
